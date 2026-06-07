@@ -1,0 +1,14 @@
+# PacketSniffer — zero third-party dependencies (Requirement 1.4)
+#
+# This project uses Python's standard library exclusively:
+#   socket, struct, ctypes, collections, argparse, dataclasses,
+#   json, csv, time, sys, os, typing, unittest
+#
+# Why no Scapy?
+#   Scapy is a powerful packet-manipulation library, but using it here would
+#   obscure the low-level TCP/IP fundamentals the project is meant to
+#   demonstrate.  Building directly on raw sockets and ctypes shows explicit
+#   understanding of IPv4 header layout, bitfield ordering, network byte order
+#   conversion, and protocol dispatch — skills that Scapy abstracts away.
+#   Zero-dependency operation also means the analyzer runs on any Python 3.8+
+#   installation without a pip install step.

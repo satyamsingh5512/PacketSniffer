@@ -1,0 +1,113 @@
+{
+  "type": "excalidraw",
+  "version": 2,
+  "source": "PacketSniffer System Design",
+  "elements": [
+    {
+      "type": "rectangle",
+      "version": 1,
+      "id": "network",
+      "x": 50,
+      "y": 50,
+      "width": 120,
+      "height": 50,
+      "strokeColor": "#1e1e1e",
+      "backgroundColor": "#a5d8ff",
+      "label": {"text": "Network\nTraffic", "fontSize": 16}
+    },
+    {
+      "type": "rectangle",
+      "version": 1,
+      "id": "socket",
+      "x": 220,
+      "y": 50,
+      "width": 120,
+      "height": 50,
+      "strokeColor": "#1e1e1e",
+      "backgroundColor": "#b2f2bb",
+      "label": {"text": "AF_PACKET\nSocket", "fontSize": 16}
+    },
+    {
+      "type": "rectangle",
+      "version": 1,
+      "id": "decoder",
+      "x": 390,
+      "y": 50,
+      "width": 120,
+      "height": 50,
+      "strokeColor": "#1e1e1e",
+      "backgroundColor": "#ffec99",
+      "label": {"text": "Decoder\nPipeline", "fontSize": 16}
+    },
+    {
+      "type": "rectangle",
+      "version": 1,
+      "id": "output",
+      "x": 560,
+      "y": 50,
+      "width": 120,
+      "height": 50,
+      "strokeColor": "#1e1e1e",
+      "backgroundColor": "#ffc9c9",
+      "label": {"text": "Output\nHandler", "fontSize": 16}
+    },
+    {
+      "type": "arrow",
+      "version": 1,
+      "id": "arrow1",
+      "points": [[170, 75], [220, 75]]
+    },
+    {
+      "type": "arrow",
+      "version": 1,
+      "id": "arrow2",
+      "points": [[340, 75], [390, 75]]
+    },
+    {
+      "type": "arrow",
+      "version": 1,
+      "id": "arrow3",
+      "points": [[510, 75], [560, 75]]
+    },
+    {
+      "type": "rectangle",
+      "version": 1,
+      "id": "packetrecord",
+      "x": 300,
+      "y": 150,
+      "width": 100,
+      "height": 40,
+      "strokeColor": "#1e1e1e",
+      "backgroundColor": "#d0bfff",
+      "label": {"text": "PacketRecord", "fontSize": 14}
+    },
+    {
+      "type": "rectangle",
+      "version": 1,
+      "id": "trafficstats",
+      "x": 420,
+      "y": 150,
+      "width": 100,
+      "height": 40,
+      "strokeColor": "#1e1e1e",
+      "backgroundColor": "#d0bfff",
+      "label": {"text": "TrafficStats", "fontSize": 14}
+    },
+    {
+      "type": "arrow",
+      "version": 1,
+      "id": "arrow4",
+      "points": [[450, 100], [400, 150]]
+    },
+    {
+      "type": "arrow",
+      "version": 1,
+      "id": "arrow5",
+      "points": [[450, 100], [470, 150]]
+    }
+  ],
+  "appState": {
+    "gridSize": 20,
+    "viewBackgroundColor": "#ffffff"
+  }
+}

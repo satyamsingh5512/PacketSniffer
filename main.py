@@ -1,67 +1,83 @@
-import socket
-import struct 
-from ctypes import *  
+"""PacketSniffer CLI entrypoint.
+
+Usage:
+    sudo python main.py [-i INTERFACE] [-p PROTOCOL] [-n COUNT]
+                        [-o OUTPUT] [-f FORMAT] [-v] [--stats-interval N]
+"""
+
+import argparse
+import os
+import sys
+
+from sniffer import OutputHandler, PacketSniffer
 
 
-
-class IPHeader(Structure):
-       
-      
-      _fields_ = [
-         ("ihl",              c_ubyte, 4),
-         ("version",          c_ubyte, 4),
-         ("tos",              c_ubyte),
-         ("len",              c_ushort),
-         ("id",               c_ushort),
-         ("offset",           c_ushort),
-         ("ttl",              c_ubyte),
-         ("protocol_num",     c_ubyte),
-         ("sum",              c_ushort),
-         ("src",              c_uint32),
-         ("dst",              c_uint32)
-      ]
-    
-
-      def __new__(self,data=None):
-           
-         
-             return self.from_buffer_copy(data)
-      
-      def __init__(self,data=None):
-            
-            self.source_ip = socket.inet_ntoa(struct.pack("@I",self.src))
-            self.destination_ip = socket.inet_ntoa(struct.pack("@I",self.dst))
-             
-            self.protocols = {1:"ICMP",6:"TCP",17:"UDP"}
-            try: 
-              self.protocol = self.protocols[self.protocol_num]
-            except:
-              self.protocol = str(self.protocol_num)
+def build_parser() -> argparse.ArgumentParser:
+    """Return the configured argument parser (Requirements 13.1–13.7)."""
+    p = argparse.ArgumentParser(
+        prog="packetsniffer",
+        description="Raw-socket network packet analyzer (stdlib only, no Scapy).",
+    )
+    p.add_argument("-i", "--interface", default="0.0.0.0",
+                   help="Bind interface (default: 0.0.0.0)")
+    p.add_argument("-p", "--protocol", default="all",
+                   choices=["all", "tcp", "udp", "icmp"],
+                   help="Protocol filter (default: all)")
+    p.add_argument("-n", "--count", type=int, default=0,
+                   help="Packets to capture; 0 = unbounded (default: 0)")
+    p.add_argument("-o", "--output", default=None,
+                   help="Output file path (for json/csv formats)")
+    p.add_argument("-f", "--format", default="console",
+                   choices=["console", "json", "csv"],
+                   help="Output format (default: console)")
+    p.add_argument("-v", "--verbose", action="store_true",
+                   help="Capture raw payload (first 64 bytes)")
+    p.add_argument("--stats-interval", type=int, default=50,
+                   help="Print stats every N retained packets (default: 50)")
+    return p
 
 
+def main() -> None:
+    args = build_parser().parse_args()
+
+    # Startup banner (Requirement 13.8)
+    print(
+        f"[PacketSniffer] interface={args.interface} protocol={args.protocol} "
+        f"format={args.format} pid={os.getpid()}"
+    )
+
+    output = OutputHandler(output_file=args.output, format=args.format)
+
+    try:
+        sniffer = PacketSniffer(
+            interface=args.interface,
+            protocol=args.protocol,
+            verbose=args.verbose,
+            count=args.count,
+        )
+    except (PermissionError, OSError) as exc:
+        print(f"[error] Cannot open raw socket: {exc}", file=sys.stderr)
+        print("[error] Raw sockets require root; rerun with sudo.", file=sys.stderr)
+        sys.exit(1)
+
+    retained = [0]
+
+    def callback(record):
+        output.write(record)
+        retained[0] += 1
+        if args.stats_interval > 0 and retained[0] % args.stats_interval == 0:
+            print(sniffer.get_stats().summary())
+
+    try:
+        sniffer.start(callback)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        # Print final stats on exit (Requirement 13.9)
+        print("\n" + sniffer.get_stats().summary())
+        sniffer.stop()
+        output.close()
 
 
-def conn():
-      sock = socket.socket(socket.AF_INET,socket.SOCK_RAW,socket.IPPROTO_TCP)  
-      sock.bind(("0.0.0.0",0))
-      sock.setsockopt(socket.IPPROTO_IP,socket.IP_HDRINCL,1)
-      return sock 
-
-
-
-def main():
-       sniffer = conn()
-       print("Sniffer Started: ")
-       # Get the raw Packets
-       while True:
-          try:   
-            raw_pack = sniffer.recvfrom(65535)[0]
-            ip_header = IPHeader(raw_pack[0:20])
-            if(ip_header.protocol == "TCP"):
-               print("Protocol: " + ip_header.protocol + " Source: " + ip_header.source_ip + " Destination: " + ip_header.destination_ip)
-      
-          except KeyboardInterrupt:
-             print("Exiting....") 
-             exit(0)
-
-main()
+if __name__ == "__main__":
+    main()
